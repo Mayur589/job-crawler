@@ -1,10 +1,22 @@
-# Keyword & Filtering Configuration
+# Keyword & Filtering Configuration (Tailored for 0 Years Experience / University Students / New Grads)
 # Configure role preferences, keyword weights, and exclusion filters.
 
 roles:
   # Title keywords: High weight when appearing directly in the job title
   title_keywords:
-    - pattern: '\b(backend|back-end)\s+(engineer|developer|architect)\b'
+    # Student / Early Career Boosts (Highest Priority)
+    - pattern: '\b(intern|internship|co-op|coop)\b'
+      display: "Internship / Co-op"
+      weight: 6.0
+    - pattern: '\b(new\s+grad|new\s+graduate|university\s+grad|campus|early\s+career)\b'
+      display: "New Grad / Early Career"
+      weight: 6.0
+    - pattern: '\b(junior|jr\.?|entry\s+level|trainee)\b|\b(associate)\s+(software|backend|frontend|full-stack|fullstack|developer|engineer|programmer)\b'
+      display: "Junior / Entry Level"
+      weight: 5.0
+
+    # Target Engineering Roles
+    - pattern: '\b(backend|back-end)\s+(engineer|developer)\b'
       display: "Backend Engineer"
       weight: 4.0
     - pattern: '\b(full-stack|fullstack|full\s+stack)\s+(engineer|developer)\b'
@@ -25,7 +37,6 @@ roles:
 
   # Tech stack keywords: Matches in description or title
   tech_keywords:
-    # Go / Golang: Use case-sensitive matching or word boundaries for 'Go' vs 'Golang'
     - pattern: '\b(golang)\b'
       display: "Golang"
       weight: 3.0
@@ -67,16 +78,18 @@ roles:
 exclusions:
   # Hard exclusions: If any of these appear in TITLE, the job is immediately excluded
   title_hard_rejects:
-    - '\b(director|vp|vice\s+president|head\s+of)\b'
+    # Senior / Staff / Principal / Management exclusions
+    - '\b(senior|sr\.?|staff|principal|lead|architect|manager|head\s+of|director|vp|vice\s+president)\b'
+    # Non-engineering roles
     - '\b(recruiter|talent|hr|sales|marketing|account\s+executive)\b'
     - '\b(legal|counsel|finance|accounting|accountant)\b'
     - '\b(nursing|clinical|physician|medical)\b'
 
   # Negative penalties: Subtracts points from overall score
   negative_keywords:
-    - pattern: '\b(10\+|12\+|15\+)\s+years?\b'
-      display: "10+ Years Experience"
-      weight: -4.0
+    - pattern: '\b([2-9]|\d{2})\+?\s*(?:-\s*\d+)?\s*years?(?:\s+of)?(?:\s+experience)?\b'
+      display: "2+ Years Experience Required"
+      weight: -8.0
     - pattern: '\bclearance\s+required\b'
       display: "Security Clearance"
       weight: -5.0
@@ -91,7 +104,6 @@ thresholds:
 
 # Location preferences
 location:
-  # Matches any remote indicator
   remote_preferred: true
   remote_patterns:
     - '\b(remote|anywhere|work\s+from\s+home|wfh|distributed)\b'

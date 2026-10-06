@@ -116,6 +116,8 @@ def run_list_command(args: argparse.Namespace) -> None:
         search_query=args.search,
         source=args.source,
         remote_only=args.remote,
+        india_only=args.india,
+        india_or_remote=args.india_or_remote,
         limit=args.limit,
     )
 
@@ -123,13 +125,21 @@ def run_list_command(args: argparse.Namespace) -> None:
         console.print("[yellow]No matching jobs found with the given filters.[/yellow]")
         return
 
-    table = Table(title=f"Jobs in Database ({len(jobs)} shown)", border_style="cyan")
+    filter_desc = ""
+    if args.india_or_remote:
+        filter_desc = " [bold cyan](India or Remote)[/bold cyan]"
+    elif args.india:
+        filter_desc = " [bold green](India only)[/bold green]"
+    elif args.remote:
+        filter_desc = " [bold blue](Remote only)[/bold blue]"
+
+    table = Table(title=f"Jobs in Database ({len(jobs)} shown){filter_desc}", border_style="cyan")
     table.add_column("ID", style="dim", no_wrap=True)
     table.add_column("Score", justify="right")
     table.add_column("Status", justify="center")
     table.add_column("Title", style="bold white", max_width=32)
     table.add_column("Company", style="cyan", max_width=18)
-    table.add_column("Location", style="yellow", max_width=20)
+    table.add_column("Location", style="yellow", max_width=22)
     table.add_column("Keywords", style="green", max_width=25)
     table.add_column("Link / URL", style="blue", max_width=35, overflow="ellipsis")
 
@@ -138,13 +148,19 @@ def run_list_command(args: argparse.Namespace) -> None:
         if len(j.matched_keywords) > 3:
             kw_display += f" +{len(j.matched_keywords) - 3}"
 
+        loc_prefix = ""
+        if j.is_india:
+            loc_prefix = "🇮🇳 "
+        elif j.is_remote:
+            loc_prefix = "🌐 "
+
         table.add_row(
             j.id[:8],
             get_score_badge(j.score),
             get_status_badge(j.status),
             j.title,
             j.company,
-            ("🌐 " if j.is_remote else "") + (j.location or "Unspecified"),
+            loc_prefix + (j.location or "Unspecified"),
             kw_display,
             j.url,
         )
@@ -254,13 +270,13 @@ def run_export_command(args: argparse.Namespace) -> None:
 
     if fmt == "csv":
         if not out:
-            out = "data/jobs_export.csv"
-        count = storage.export_csv(out)
+            out = "data/jobs_export_india.csv" if args.india else ("data/jobs_export_india_remote.csv" if args.india_or_remote else "data/jobs_export.csv")
+        count = storage.export_csv(out, india_only=args.india, india_or_remote=args.india_or_remote)
         console.print(f"[green]✓ Exported {count} jobs to CSV: [bold]{out}[/bold][/green]")
     elif fmt == "json":
         if not out:
-            out = "data/jobs_export.json"
-        count = storage.export_json(out)
+            out = "data/jobs_export_india.json" if args.india else ("data/jobs_export_india_remote.json" if args.india_or_remote else "data/jobs_export.json")
+        count = storage.export_json(out, india_only=args.india, india_or_remote=args.india_or_remote)
         console.print(f"[green]✓ Exported {count} jobs to JSON: [bold]{out}[/bold][/green]")
     else:
         console.print("[red]Invalid export format. Choose 'csv' or 'json'.[/red]")
@@ -303,9 +319,11 @@ def main() -> None:
     list_parser = subparsers.add_parser("list", help="List matched jobs")
     list_parser.add_argument("--status", choices=["new", "seen", "applied", "saved", "ignored", "closed"], help="Filter by status")
     list_parser.add_argument("--min-score", type=float, help="Minimum score filter")
-    list_parser.add_argument("--search", type=str, help="Search term in title, company, or keywords")
+    list_parser.add_argument("--search", type=str, help="Search term in title, company, location, or keywords")
     list_parser.add_argument("--source", type=str, help="Filter by source (e.g. greenhouse:gitlab)")
     list_parser.add_argument("--remote", action="store_true", help="Show remote-only jobs")
+    list_parser.add_argument("--india", action="store_true", help="Show India-based jobs only")
+    list_parser.add_argument("--india-or-remote", action="store_true", help="Show jobs located in India or Remote")
     list_parser.add_argument("--limit", type=int, default=30, help="Max results to return (default: 30)")
 
     # show
@@ -324,6 +342,8 @@ def main() -> None:
     export_parser = subparsers.add_parser("export", help="Export jobs to CSV or JSON")
     export_parser.add_argument("--format", choices=["csv", "json"], default="csv", help="Export format (default: csv)")
     export_parser.add_argument("--output", "-o", type=str, help="Output file path")
+    export_parser.add_argument("--india", action="store_true", help="Export India-based jobs only")
+    export_parser.add_argument("--india-or-remote", action="store_true", help="Export jobs located in India or Remote")
 
     # test-match
     test_parser = subparsers.add_parser("test-match", help="Test keyword rules against a job title and description")

@@ -39,6 +39,7 @@ class JobStorage:
                     company TEXT NOT NULL,
                     location TEXT NOT NULL,
                     is_remote INTEGER NOT NULL DEFAULT 0,
+                    is_india INTEGER NOT NULL DEFAULT 0,
                     url TEXT NOT NULL,
                     description TEXT NOT NULL,
                     matched_keywords TEXT NOT NULL,
@@ -50,10 +51,17 @@ class JobStorage:
                     last_seen_at TEXT NOT NULL
                 )
             """)
+            # Migration check for existing databases
+            try:
+                conn.execute("ALTER TABLE jobs ADD COLUMN is_india INTEGER NOT NULL DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
             conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_score ON jobs(score)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_fuzzy ON jobs(fuzzy_key)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_company ON jobs(company)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_india ON jobs(is_india)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_jobs_last_seen ON jobs(last_seen_at)")
 
     def upsert_job(self, job: JobRecord) -> tuple[bool, JobRecord]:
@@ -78,7 +86,8 @@ class JobStorage:
                         matched_keywords = ?,
                         url = ?,
                         location = ?,
-                        is_remote = ?
+                        is_remote = ?,
+                        is_india = ?
                     WHERE id = ?
                     """,
                     (
@@ -88,6 +97,7 @@ class JobStorage:
                         job.url,
                         job.location,
                         1 if job.is_remote else 0,
+                        1 if job.is_india else 0,
                         job.id,
                     ),
                 )
@@ -116,10 +126,10 @@ class JobStorage:
             conn.execute(
                 """
                 INSERT INTO jobs (
-                    id, source, source_job_id, title, company, location, is_remote,
+                    id, source, source_job_id, title, company, location, is_remote, is_india,
                     url, description, matched_keywords, score, fuzzy_key, status,
                     posted_at, first_seen_at, last_seen_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     job.id,
@@ -129,6 +139,7 @@ class JobStorage:
                     job.company,
                     job.location,
                     1 if job.is_remote else 0,
+                    1 if job.is_india else 0,
                     job.url,
                     job.description,
                     json.dumps(job.matched_keywords),
@@ -156,6 +167,8 @@ class JobStorage:
         search_query: Optional[str] = None,
         source: Optional[str] = None,
         remote_only: bool = False,
+        india_only: bool = False,
+        india_or_remote: bool = False,
         limit: int = 50,
         offset: int = 0,
     ) -> list[JobRecord]:
@@ -172,12 +185,16 @@ class JobStorage:
         if source:
             clauses.append("source = ?")
             params.append(source)
-        if remote_only:
+        if india_only:
+            clauses.append("is_india = 1")
+        elif india_or_remote:
+            clauses.append("(is_india = 1 OR is_remote = 1)")
+        elif remote_only:
             clauses.append("is_remote = 1")
         if search_query:
-            clauses.append("(title LIKE ? OR company LIKE ? OR matched_keywords LIKE ?)")
+            clauses.append("(title LIKE ? OR company LIKE ? OR location LIKE ? OR matched_keywords LIKE ?)")
             like_pattern = f"%{search_query}%"
-            params.extend([like_pattern, like_pattern, like_pattern])
+            params.extend([like_pattern, like_pattern, like_pattern, like_pattern])
 
         where_sql = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         query = f"""
@@ -251,9 +268,18 @@ class JobStorage:
                 "top_keywords": top_keywords,
             }
 
-    def export_csv(self, output_file: str | Path) -> int:
-        """Export all matched jobs to CSV."""
-        jobs = self.list_jobs(limit=10000)
+    def export_csv(
+        self,
+        output_file: str | Path,
+        india_only: bool = False,
+        india_or_remote: bool = False,
+    ) -> int:
+        """Export matched jobs to CSV with optional location filtering."""
+        jobs = self.list_jobs(
+            india_only=india_only,
+            india_or_remote=india_or_remote,
+            limit=10000,
+        )
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -265,6 +291,7 @@ class JobStorage:
             "company",
             "location",
             "is_remote",
+            "is_india",
             "url",
             "matched_keywords",
             "source",
@@ -283,6 +310,7 @@ class JobStorage:
                     "company": j.company,
                     "location": j.location,
                     "is_remote": j.is_remote,
+                    "is_india": j.is_india,
                     "url": j.url,
                     "matched_keywords": ", ".join(j.matched_keywords),
                     "source": j.source,
@@ -291,9 +319,18 @@ class JobStorage:
                 })
         return len(jobs)
 
-    def export_json(self, output_file: str | Path) -> int:
-        """Export all matched jobs to JSON."""
-        jobs = self.list_jobs(limit=10000)
+    def export_json(
+        self,
+        output_file: str | Path,
+        india_only: bool = False,
+        india_or_remote: bool = False,
+    ) -> int:
+        """Export matched jobs to JSON with optional location filtering."""
+        jobs = self.list_jobs(
+            india_only=india_only,
+            india_or_remote=india_or_remote,
+            limit=10000,
+        )
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         data = [j.model_dump(mode="json") for j in jobs]
@@ -303,6 +340,8 @@ class JobStorage:
 
     def _row_to_record(self, row: sqlite3.Row) -> JobRecord:
         """Convert a SQLite Row to a JobRecord pydantic model."""
+        keys = row.keys()
+        is_india_val = bool(row["is_india"]) if "is_india" in keys else False
         return JobRecord(
             id=row["id"],
             source=row["source"],
@@ -311,6 +350,7 @@ class JobStorage:
             company=row["company"],
             location=row["location"],
             is_remote=bool(row["is_remote"]),
+            is_india=is_india_val,
             url=row["url"],
             description=row["description"],
             matched_keywords=json.loads(row["matched_keywords"]) if row["matched_keywords"] else [],

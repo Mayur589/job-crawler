@@ -4,13 +4,14 @@
 crawler:
   user_agent: "JobCrawler/1.0 (+https://github.com/mayur/job-crawler; dev career tracker)"
   request_timeout_seconds: 15
-  rate_limit_delay_seconds: 1.0
+  rate_limit_delay_seconds: 0.5
 
 sources:
   greenhouse:
     enabled: true
     # Public boards-api.greenhouse.io slugs
     companies:
+      # Top tech with India engineering & remote roles
       - slug: gitlab
         name: "GitLab"
       - slug: stripe
@@ -25,6 +26,21 @@ sources:
         name: "Coinbase"
       - slug: robinhood
         name: "Robinhood"
+      # Major tech hubs in India (Bengaluru, Pune, Hyderabad, Gurgaon)
+      - slug: twilio
+        name: "Twilio"
+      - slug: rubrik
+        name: "Rubrik"
+      - slug: thoughtworks
+        name: "Thoughtworks"
+      - slug: inmobi
+        name: "InMobi"
+      - slug: hackerrank
+        name: "HackerRank"
+      - slug: slice
+        name: "Slice"
+      - slug: groww
+        name: "Groww"
 
   lever:
     enabled: true

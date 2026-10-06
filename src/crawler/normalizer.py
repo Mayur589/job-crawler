@@ -120,3 +120,12 @@ def is_remote_location(location: str, title: str, description: str = "") -> bool
     """Detect if the role is remote from location or title."""
     pattern = re.compile(r"\b(remote|anywhere|work\s+from\s+home|wfh|distributed)\b", re.IGNORECASE)
     return bool(pattern.search(location) or pattern.search(title))
+
+
+def is_india_location(location: str, title: str = "", description: str = "") -> bool:
+    """Detect if the role is located in India (cities, states, or country)."""
+    pattern = re.compile(
+        r"\b(india|bengaluru|bangalore|hyderabad|pune|mumbai|delhi|new\s+delhi|noida|gurugram|gurgaon|chennai|kolkata|ahmedabad|jaipur|indore|kochi|kerala|karnataka|telangana|maharashtra|haryana|tamil\s+nadu)\b",
+        re.IGNORECASE,
+    )
+    return bool(pattern.search(location) or pattern.search(title))

@@ -16,6 +16,7 @@ from crawler.normalizer import (
     canonicalize_url,
     clean_html_text,
     generate_job_id,
+    is_india_location,
     is_remote_location,
     normalize_fuzzy_key,
 )
@@ -175,6 +176,7 @@ class CrawlEngine:
         job_id = generate_job_id(raw.source, raw.source_job_id, canonical_url)
         fuzzy_key = normalize_fuzzy_key(raw.company, clean_title, clean_loc)
         remote_detected = match.is_remote or is_remote_location(clean_loc, clean_title, clean_desc)
+        india_detected = is_india_location(clean_loc, clean_title, clean_desc)
 
         record = JobRecord(
             id=job_id,
@@ -184,6 +186,7 @@ class CrawlEngine:
             company=raw.company,
             location=clean_loc or ("Remote" if remote_detected else "Unspecified"),
             is_remote=remote_detected,
+            is_india=india_detected,
             url=canonical_url or raw.url,
             description=clean_desc,
             matched_keywords=match.matched_keywords,

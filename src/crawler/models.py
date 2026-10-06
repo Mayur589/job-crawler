@@ -58,6 +58,7 @@ class JobRecord(BaseModel):
     company: str
     location: str
     is_remote: bool = False
+    is_india: bool = False
     url: str
     description: str
     matched_keywords: list[str] = Field(default_factory=list)
