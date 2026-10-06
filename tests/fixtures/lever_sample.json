@@ -1,0 +1,25 @@
+[
+  {
+    "id": "lever-uuid-201",
+    "text": "Senior Backend Developer - Golang",
+    "hostedUrl": "https://jobs.lever.co/spotify/lever-uuid-201?utm_source=linkedin",
+    "categories": {
+      "location": "Stockholm, Sweden",
+      "department": "Engineering",
+      "allLocations": ["Stockholm", "London"]
+    },
+    "descriptionPlain": "We build scalable cloud services using Golang, Docker, and Kubernetes.",
+    "additionalPlain": "Must have good understanding of relational databases.",
+    "createdAt": 1782214185000
+  },
+  {
+    "id": "lever-uuid-202",
+    "text": "Director of Human Resources",
+    "hostedUrl": "https://jobs.lever.co/spotify/lever-uuid-202",
+    "categories": {
+      "location": "New York, NY"
+    },
+    "descriptionPlain": "Oversee people ops and talent acquisition.",
+    "createdAt": 1782214185000
+  }
+]

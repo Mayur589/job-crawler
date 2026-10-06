@@ -1,0 +1,97 @@
+# Keyword & Filtering Configuration
+# Configure role preferences, keyword weights, and exclusion filters.
+
+roles:
+  # Title keywords: High weight when appearing directly in the job title
+  title_keywords:
+    - pattern: '\b(backend|back-end)\s+(engineer|developer|architect)\b'
+      display: "Backend Engineer"
+      weight: 4.0
+    - pattern: '\b(full-stack|fullstack|full\s+stack)\s+(engineer|developer)\b'
+      display: "Full Stack Engineer"
+      weight: 3.5
+    - pattern: '\b(software\s+engineer|software\s+developer)\b'
+      display: "Software Engineer"
+      weight: 2.5
+    - pattern: '\b(go|golang)\s+(engineer|developer)\b'
+      display: "Go Engineer"
+      weight: 4.5
+    - pattern: '\bpython\s+(engineer|developer)\b'
+      display: "Python Engineer"
+      weight: 4.5
+    - pattern: '\b(systems|infrastructure|platform)\s+engineer\b'
+      display: "Systems/Platform Engineer"
+      weight: 3.0
+
+  # Tech stack keywords: Matches in description or title
+  tech_keywords:
+    # Go / Golang: Use case-sensitive matching or word boundaries for 'Go' vs 'Golang'
+    - pattern: '\b(golang)\b'
+      display: "Golang"
+      weight: 3.0
+      case_sensitive: false
+    - pattern: '\bGo\b'
+      display: "Go"
+      weight: 3.0
+      case_sensitive: true
+    - pattern: '\bpython\b'
+      display: "Python"
+      weight: 3.0
+      case_sensitive: false
+    - pattern: '\b(fastapi|django|flask)\b'
+      display: "Python Framework"
+      weight: 2.0
+      case_sensitive: false
+    - pattern: '\b(grpc|restful|microservices)\b'
+      display: "APIs/Microservices"
+      weight: 1.5
+      case_sensitive: false
+    - pattern: '\b(postgresql|postgres|mysql|redis)\b'
+      display: "Database/Cache"
+      weight: 1.5
+      case_sensitive: false
+    - pattern: '\b(react|typescript|node\.?js|vue)\b'
+      display: "Frontend/Fullstack Tech"
+      weight: 2.0
+      case_sensitive: false
+    - pattern: '\b(docker|kubernetes|k8s)\b'
+      display: "Containers/K8s"
+      weight: 1.5
+      case_sensitive: false
+    - pattern: '\b(aws|gcp|cloud)\b'
+      display: "Cloud"
+      weight: 1.0
+      case_sensitive: false
+
+# Negative keywords: hard rejection or penalty points
+exclusions:
+  # Hard exclusions: If any of these appear in TITLE, the job is immediately excluded
+  title_hard_rejects:
+    - '\b(director|vp|vice\s+president|head\s+of)\b'
+    - '\b(recruiter|talent|hr|sales|marketing|account\s+executive)\b'
+    - '\b(legal|counsel|finance|accounting|accountant)\b'
+    - '\b(nursing|clinical|physician|medical)\b'
+
+  # Negative penalties: Subtracts points from overall score
+  negative_keywords:
+    - pattern: '\b(10\+|12\+|15\+)\s+years?\b'
+      display: "10+ Years Experience"
+      weight: -4.0
+    - pattern: '\bclearance\s+required\b'
+      display: "Security Clearance"
+      weight: -5.0
+
+# Minimum score threshold for considering a job relevant
+thresholds:
+  min_score: 3.0
+  # Require at least one role/tech keyword match in title or description
+  require_tech_or_role_match: true
+  # Require at least one engineering/developer role or tech keyword in TITLE
+  require_role_title: true
+
+# Location preferences
+location:
+  # Matches any remote indicator
+  remote_preferred: true
+  remote_patterns:
+    - '\b(remote|anywhere|work\s+from\s+home|wfh|distributed)\b'

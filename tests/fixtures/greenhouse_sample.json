@@ -1,0 +1,34 @@
+{
+  "jobs": [
+    {
+      "id": 101,
+      "title": "Backend Engineer - Go / Distributed Systems",
+      "absolute_url": "https://job-boards.greenhouse.io/gitlab/jobs/101?gh_src=email_campaign",
+      "location": {
+        "name": "Remote, Global"
+      },
+      "content": "<p>We are seeking a <strong>Backend Engineer</strong> with deep experience in Go, microservices, gRPC, and PostgreSQL.</p>",
+      "updated_at": "2026-10-01T12:00:00Z"
+    },
+    {
+      "id": 102,
+      "title": "Vice President of Sales & Recruiting",
+      "absolute_url": "https://job-boards.greenhouse.io/gitlab/jobs/102",
+      "location": {
+        "name": "San Francisco, CA"
+      },
+      "content": "<p>Executive leadership for global sales division.</p>",
+      "updated_at": "2026-10-01T12:00:00Z"
+    },
+    {
+      "id": 103,
+      "title": "Full Stack Engineer (Python / React)",
+      "absolute_url": "https://job-boards.greenhouse.io/gitlab/jobs/103",
+      "location": {
+        "name": "Remote, US"
+      },
+      "content": "Join our team working with Python, Django, FastAPI, and React.",
+      "updated_at": "2026-10-02T12:00:00Z"
+    }
+  ]
+}

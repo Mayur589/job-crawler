@@ -1,0 +1,47 @@
+# Sources Configuration
+# ATS endpoints and public job feed sources
+
+crawler:
+  user_agent: "JobCrawler/1.0 (+https://github.com/mayur/job-crawler; dev career tracker)"
+  request_timeout_seconds: 15
+  rate_limit_delay_seconds: 1.0
+
+sources:
+  greenhouse:
+    enabled: true
+    # Public boards-api.greenhouse.io slugs
+    companies:
+      - slug: gitlab
+        name: "GitLab"
+      - slug: stripe
+        name: "Stripe"
+      - slug: cloudflare
+        name: "Cloudflare"
+      - slug: airbnb
+        name: "Airbnb"
+      - slug: reddit
+        name: "Reddit"
+      - slug: coinbase
+        name: "Coinbase"
+      - slug: robinhood
+        name: "Robinhood"
+
+  lever:
+    enabled: true
+    # Public api.lever.co/v0/postings slugs
+    companies:
+      - slug: spotify
+        name: "Spotify"
+      - slug: palantir
+        name: "Palantir"
+      - slug: kinsta
+        name: "Kinsta"
+
+  remoteok:
+    enabled: true
+    # RemoteOK public feed
+    tags:
+      - "backend"
+      - "golang"
+      - "python"
+      - "full-stack"
